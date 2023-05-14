@@ -4,30 +4,46 @@ import viteLogo from '/vite.svg'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [city, setCity] = useState('');
+  const [info, setInfo] = useState({});
+
+  const handleSearchChange = (e) => {
+    setCity(e.target.value);
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    await fetch(`${import.meta.env.VITE_API_URL}?q=${city}&units=metric&APPID=${import.meta.env.VITE_API_KEY}`)
+          .then(res => res.json())
+          .then(result => setInfo(result))
+          .catch(error => {
+            console.error(error);
+            setInfo({});
+          });
+  }
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <div className="search-bar">
+        <form onSubmit={handleSubmit}>
+          <label htmlFor="city-search">Enter city name</label>
+          <input
+            name="city-search" 
+            id="city-search" 
+            type="text" 
+            placeholder="Ex. New York" 
+            value={city}
+            onChange={handleSearchChange}/>
+          <button type='submit'>Search</button>
+        </form>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      {Object.keys(info).length > 0 &&
+        <div className="weather-info">
+          <h3>{info.name}</h3>
+          <p>Temperature: {info.main.temp}°</p>
+          <p>Sky: {info.weather[0].main}</p>
+        </div>
+      }
     </>
   )
 }
