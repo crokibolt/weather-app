@@ -1,6 +1,4 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 
 function App() {
@@ -15,17 +13,20 @@ function App() {
     e.preventDefault();
     await fetch(`${import.meta.env.VITE_API_URL}?q=${city}&units=metric&APPID=${import.meta.env.VITE_API_KEY}`)
           .then(res => res.json())
-          .then(result => setInfo(result))
+          .then(result => {
+            setInfo(result);
+          })
           .catch(error => {
-            console.error(error);
             setInfo({});
+            console.log(info);
           });
   }
 
   return (
     <>
-      <div className="search-bar">
-        <form onSubmit={handleSubmit}>
+      <div className="top-bar">
+        <h1>Weather App</h1>
+        <form className='search-form' onSubmit={handleSubmit}>
           <label htmlFor="city-search">Enter city name</label>
           <input
             name="city-search" 
@@ -37,12 +38,13 @@ function App() {
           <button type='submit'>Search</button>
         </form>
       </div>
-      {Object.keys(info).length > 0 &&
+      {typeof info.main != 'undefined' ? 
         <div className="weather-info">
           <h3>{info.name}</h3>
-          <p>Temperature: {info.main.temp}°</p>
+          <p>Temperature: {info.main.temp}°C</p>
           <p>Sky: {info.weather[0].main}</p>
         </div>
+        : <p>City not found</p>
       }
     </>
   )
