@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import './App.css'
+import Navbar from './components/Navbar';
+import WeatherInfo from './components/WeatherInfo';
 
 const regex = /^[A-Za-z\s]+$/;
 
@@ -45,33 +47,13 @@ function App() {
 
   return (
     <>
-      <div className="top-bar">
-        <h1>Weather App</h1>
-        <form className='search-form' onSubmit={handleSubmit}>
-          <label htmlFor="city-search">Enter city name</label>
-          <input
-            name="city-search" 
-            id="city-search" 
-            type="text" 
-            placeholder="Ex. New York" 
-            value={city}
-            onChange={handleSearchChange}/>
-          <button type='submit'>Search</button>
-        </form>
-      </div>
+      <Navbar 
+        handleSubmit={handleSubmit} 
+        handleChange={handleSearchChange} 
+        city={city}/>
+
       {!infoIsEmpty() ? 
-        <div key={infoKey} className="weather-info">
-          <h1>{info.name}, {info.sys.country}</h1>
-          <p>
-            <i>
-              {info.weather[0].description.toUpperCase()}  
-            </i>
-            <img src={`${import.meta.env.VITE_ICON_URL + info.weather[0].icon}.png`} />
-          </p>
-          <p>Temperature: {info.main.temp}°C</p>
-          <p>Wind: {info.wind.speed} m/s</p>
-          <p>Humidity: {info.main.humidity}%</p>
-        </div>
+        <WeatherInfo info={info} infoKey={infoKey} />
         : null
       }
       <h2 id="not-found"></h2>
