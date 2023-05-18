@@ -1,9 +1,12 @@
 import { useState } from 'react'
 import './App.css'
 
+const regex = /^[A-Za-z\s]+$/;
+
 function App() {
   const [city, setCity] = useState('');
   const [info, setInfo] = useState({});
+  const [infoKey, setInfoKey] = useState(Math.random());
 
   const handleSearchChange = (e) => {
     setCity(e.target.value);
@@ -11,15 +14,33 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await fetch(`${import.meta.env.VITE_API_URL}?q=${city}&units=metric&APPID=${import.meta.env.VITE_API_KEY}`)
-          .then(res => res.json())
-          .then(result => {
-            setInfo(result);
-          })
-          .catch(error => {
-            setInfo({});
-            console.log(info);
-          });
+    const notFound = document.querySelector('#not-found');
+    setCity('');
+
+    if(city.length > 0 && regex.test(city)){
+      try{
+        const response = await fetch(`${import.meta.env.VITE_API_URL}?q=${city}&units=metric&APPID=${import.meta.env.VITE_API_KEY}`);
+  
+        if(!response.ok) {
+          throw('Not found')
+        }
+  
+        const json = await response.json();
+        setInfo(json);
+        setInfoKey(Math.random());
+        console.log(json);
+        notFound.textContent = '';
+
+      }catch(error){
+  
+        setInfo({});
+        notFound.textContent = 'City not found'
+      };
+    }
+  }
+
+  const infoIsEmpty = () => {
+    return Object.keys(info).length === 0;
   }
 
   return (
@@ -38,14 +59,22 @@ function App() {
           <button type='submit'>Search</button>
         </form>
       </div>
-      {typeof info.main != 'undefined' ? 
-        <div className="weather-info">
-          <h3>{info.name}</h3>
+      {!infoIsEmpty() ? 
+        <div key={infoKey} className="weather-info">
+          <h1>{info.name}, {info.sys.country}</h1>
+          <p>
+            <i>
+              {info.weather[0].description.toUpperCase()}  
+            </i>
+            <img src={`${import.meta.env.VITE_ICON_URL + info.weather[0].icon}.png`} />
+          </p>
           <p>Temperature: {info.main.temp}°C</p>
-          <p>Sky: {info.weather[0].main}</p>
+          <p>Wind: {info.wind.speed} m/s</p>
+          <p>Humidity: {info.main.humidity}%</p>
         </div>
-        : <p>City not found</p>
+        : null
       }
+      <h2 id="not-found"></h2>
     </>
   )
 }
